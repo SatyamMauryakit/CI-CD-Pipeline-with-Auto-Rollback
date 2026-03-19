@@ -31,32 +31,19 @@ jobs:
           host: ${{ secrets.EC2_IP }}
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
+          source: docker-compose.yml
+          overwrite: true
           script: |
                  echo "Installing required packages & folders"
                  sudo apt-get update && sudo apt-get install docker.io docker-compose-v2 -y
                  sudo usermod -aG docker $USER
-                 rm -rf ~/devops/docker-compose.yml
-      - name: Copy the docker-compose file
-        uses: appleboy/scp-action@v1
-        with:
-                host: ${{ secrets.EC2_IP }}
-                username: ${{ secrets.EC2_USERNAME }}
-                key: ${{ secrets.EC2_KEY }}
-                source: docker-compose.yml
-                overwrite: true
-      - name: SSH to Prod server & run the app
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-                host: ${{ secrets.EC2_IP }}
-                username: ${{ secrets.EC2_USERNAME }}
-                key: ${{ secrets.EC2_KEY }}
-                script: |
-                 echo "Running App"
-                 
-                 export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-                 export DOCKER_TAG=${{ github.sha }}
-                 echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
-                 docker compose down && docker compose up -d --build --force-recreate --pull always
+                 rm -rf docker-compose.yml
+                 ./deploy.sh
+                 echo "Deployment completed successfully!"
+                
+      
+      
+                
                 
          
         
