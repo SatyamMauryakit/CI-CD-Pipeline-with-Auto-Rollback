@@ -1,0 +1,6 @@
+# Ignore the .DS_Store file, which is created by macOS to store custom attributes of a folder
+.DS_Store
+# Ignore the node_modules directory, which contains dependencies for JavaScript projects
+node_modules/
+
+
