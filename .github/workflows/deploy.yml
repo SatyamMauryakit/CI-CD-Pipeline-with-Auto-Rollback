@@ -23,8 +23,10 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v7
         with:
-           push: true
-           tags: ${{ secrets.DOCKER_USERNAME}}/project-1:${{ github.sha }}
+         push: true
+         tags: |
+          ${{ secrets.DOCKER_USERNAME }}/project-1:latest
+          ${{ secrets.DOCKER_USERNAME }}/project-1:${{ github.sha }}
       - name: SSH to EC2 & Deploy
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -32,6 +34,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/devops-app:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/project-1:latest
             bash deploy.sh
         
