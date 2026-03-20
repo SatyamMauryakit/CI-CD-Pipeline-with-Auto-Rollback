@@ -28,7 +28,7 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/project-1:latest
             ${{ secrets.DOCKER_USERNAME }}/project-1:${{ github.sha }}
 
-      # ✅ Copy files to EC2 (docker-compose + deploy.sh)
+      # ✅ Copy files to EC2
       - name: Copy files to EC2
         uses: appleboy/scp-action@v1
         with:
@@ -36,32 +36,24 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           source: "docker-compose.yml,deploy.sh"
-          target: "/home/ubuntu/temp/"
 
-      # ✅ Create folder, move files, run deploy.sh
-      - name: Setup & Deploy
+      # ✅ Deploy
+      - name: SSH to EC2 & Deploy
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_IP }}
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
-            set -e
-
-            # 📁 Create main app folder
-            mkdir -p /home/ubuntu/my-app
-
-            # 📦 Move files from temp to app folder
-            mv /home/ubuntu/temp/docker-compose.yml /home/ubuntu/my-app/
-            mv /home/ubuntu/temp/deploy.sh /home/ubuntu/my-app/
-
-            # 🔐 Give execute permission
-            chmod +x /home/ubuntu/my-app/deploy.sh
-
-            cd /home/ubuntu/my-app
+            chmod +x deploy.sh
 
             echo "🔐 Docker login"
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-            # 🚀 Run deploy
+            sudo apt-get update -y
+            sudo apt-get install docker-compose-plugin -y
+
+            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            export DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
+
             ./deploy.sh
