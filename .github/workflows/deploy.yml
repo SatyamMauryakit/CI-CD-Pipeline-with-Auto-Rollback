@@ -8,6 +8,9 @@ on:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_TAG: ${{ github.sha }}
 
     steps:
       - name: Checkout code
@@ -35,7 +38,7 @@ jobs:
           host: ${{ secrets.EC2_IP }}
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
-          source: "docker-compose.yml,deploy.sh"
+          source: "docker-compose.yml"
 
       # ✅ Deploy
       - name: SSH to EC2 & Deploy
@@ -52,8 +55,4 @@ jobs:
 
             sudo apt-get update -y
             sudo apt-get install docker-compose-plugin -y
-
-            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-            export DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
-
             ./deploy.sh
