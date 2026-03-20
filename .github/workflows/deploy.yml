@@ -26,50 +26,43 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/project-1:latest
-            ${{ secrets.DOCKER_USERNAME }}/project-1:${{ github.sha }}
-      - name: SSH to Prod server & create app folder
+
+      # ✅ Prepare server
+      - name: Setup EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-                host: ${{ secrets.EC2_IP }}
-                username: ubuntu
-                key: ${{ secrets.EC2_KEY }}
-                script: |
-                 echo "Installing required packages & folders"
-                 sudo apt-get update && sudo apt-get install docker.io -y
-            
-                 sudo apt-get install docker-compose-v2 -y
-                 sudo usermod -aG docker $USER
-                 rm -rf ~/project-1/Docker-compose.yml
-                 mkdir -p ~/project-1
-            
+          host: ${{ secrets.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            sudo apt-get update -y
+            sudo apt-get install docker.io -y
+            sudo usermod -aG docker ubuntu
 
-      - name: Copy the docker-compose file
-        uses: appleboy/scp-action@v1
+            mkdir -p ~/project-1
+
+      # ✅ Copy ALL required files
+      - name: Copy project files
+        uses: appleboy/scp-action@v0.1.4
         with:
-                host: ${{ secrets.EC2_IP }}
-                username: ubuntu
-                key: ${{ secrets.EC2_KEY }}
-                source: Docker-compose.yml
-                target: ~/project-1
-                overwrite: true
+          host: ${{ secrets.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          source: "docker-compose.yml,deploy.sh"
+          target: "~/project-1"
 
       # ✅ Deploy
-      - name: SSH to EC2 & Deploy
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_IP }}
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
+            cd ~/project-1
+
             chmod +x deploy.sh
 
-            echo "🔐 Docker login"
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-            sudo apt-get update -y
-            sudo apt-get install docker-compose-plugin -y
-
-            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-            export DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
 
             ./deploy.sh
