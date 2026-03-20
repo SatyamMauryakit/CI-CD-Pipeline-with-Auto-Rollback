@@ -35,9 +35,11 @@ jobs:
                 key: ${{ secrets.EC2_KEY }}
                 script: |
                  echo "Installing required packages & folders"
-                 sudo apt-get update && sudo apt-get install docker.io docker-compose-v2 -y
+                 sudo apt-get update && sudo apt-get install docker.io -y
+            
+                 sudo apt-get install docker-compose-v2 -y
                  sudo usermod -aG docker $USER
-                 rm -rf ~/devops/docker-compose.yml
+                 rm -rf ~/project-1/Docker-compose.yml
                  mkdir -p ~/project-1
             
 
