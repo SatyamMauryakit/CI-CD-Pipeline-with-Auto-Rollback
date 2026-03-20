@@ -60,4 +60,3 @@ echo "✅ Deployment successful!"
 # 🔥 Step 8: Clean unused images (KEEP ONLY latest & previous)
 echo "🧹 Cleaning unused images..."
 docker image prune -f
-~

@@ -1,3 +1,4 @@
+# This workflow builds a Docker image, pushes it to Docker Hub, and deploys it to an EC2 instance using SSH.
 name: CI/CD Pipeline
 
 on:
