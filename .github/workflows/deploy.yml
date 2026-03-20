@@ -47,7 +47,7 @@ jobs:
                 host: ${{ secrets.EC2_IP }}
                 username: ubuntu
                 key: ${{ secrets.EC2_KEY }}
-                source: docker-compose.yml
+                source: Docker-compose.yml
                 target: ~/project-1
                 overwrite: true
 
