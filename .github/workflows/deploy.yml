@@ -27,15 +27,29 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/project-1:latest
             ${{ secrets.DOCKER_USERNAME }}/project-1:${{ github.sha }}
+      - name: SSH to Prod server & create app folder
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+                host: ${{ secrets.EC2_IP }}
+                username: ubuntu
+                key: ${{ secrets.EC2_KEY }}
+                script: |
+                 echo "Installing required packages & folders"
+                 sudo apt-get update && sudo apt-get install docker.io docker-compose-v2 -y
+                 sudo usermod -aG docker $USER
+                 rm -rf ~/devops/docker-compose.yml
+                 mkdir -p ~/project-1
+            
 
-      # ✅ Copy files to EC2
-      - name: Copy files to EC2
+      - name: Copy the docker-compose file
         uses: appleboy/scp-action@v1
         with:
-          host: ${{ secrets.EC2_IP }}
-          username: ubuntu
-          key: ${{ secrets.EC2_KEY }}
-          source: "docker-compose.yml,deploy.sh"
+                host: ${{ secrets.EC2_IP }}
+                username: ubuntu
+                key: ${{ secrets.EC2_KEY }}
+                source: docker-compose.yml
+                target: ~/project-1
+                overwrite: true
 
       # ✅ Deploy
       - name: SSH to EC2 & Deploy
